@@ -66,55 +66,61 @@ O Fato é a coluna de interesse que representa o ponto focal da análise. Nesse 
 
 Dimensões Analisadas do dataframe da Brew Haven
 
-Dimensão	Variáveis Representativas
+Entendimento da Base de Dados
+Visão geral das colunas
+ColunaTipoO que representaSignificado de negóciotransaction_idNuméricoIdentificador único da transaçãoChave primária — cada linha é uma venda de um único item (não é o pedido inteiro, é o item vendido)transaction_dateData (texto)Data da venda (DD-MM-AAAA)Permite análise de sazonalidade, dias da semana, feriadostransaction_timeHora (texto)Horário exato da vendaPermite entender picos de movimento (manhã, almoço, tarde)store_idNuméricoCódigo da lojaIdentificador técnico da unidadestore_locationCategóricoNome/bairro da loja (Hell's Kitchen, Lower Manhattan, Astoria)Permite comparar performance entre unidadesproduct_idNuméricoCódigo do produtoIdentificador técnico do item vendidotransaction_qtyNuméricoQuantidade vendida naquela transaçãoVolume de vendas — indica se é venda unitária ou em maior quantidadeunit_priceMonetário (texto "R$ x,xx")Preço unitário do produtoBase para entender posicionamento de preço por produtoTotal_BillMonetário (texto "R$ x,xx")Valor total da linha (qty × unit_price)Métrica-chave de receitaproduct_categoryCategóricoCategoria macro do produto (Coffee, Tea, Bakery, etc.)Visão de portfólio/mix de produtosproduct_typeCategóricoSubcategoria (ex: dentro de "Coffee": Espresso, Latte...)Granularidade intermediária do mixproduct_detailCategóricoNome específico do itemNível mais detalhado — SKUSizeCategóricoTamanho (Small, Regular, Large, Not Defined)Relevante para bebidas; "Not Defined" provavelmente aparece em produtos sem tamanho (ex: grãos de café, itens de padaria)Month Name / MonthCategórico/NuméricoMês da transação (nome e número)Sazonalidade mensalDay Name / Day of WeekCategórico/NuméricoDia da semana (nome e número 0-6)Padrão semanal (fim de semana vs. dia útil)HourNuméricoHora da transação (0-23)Padrão intradiário — horários de pico
+Observação importante: essa é uma base em grão de item vendido, não de "pedido" ou "cliente". Isso significa que não temos como saber quantos itens diferentes um mesmo cliente comprou em uma única visita, nem temos um identificador de cliente. Ou seja, dá para analisar produtos, receita, tempo e loja, mas não dá para analisar comportamento de cliente individual (recorrência, ticket médio por cliente, etc.) — o que temos é ticket médio por transação/linha, não por visita.
 
-Tempo (Data/Hora do Pedido)	transaction_date (Data), transaction_time (Horário), Hour (Hora do dia), Month (Mês numérico), Month Name (Nome do Mês), Day Name (Nome do Dia), Day of Week (Dia da semana em número)
 
-Loja (Onde Foi Vendido)	store_id (ID da loja), store_location (Bairro/Cidade: Astoria, Lower Manhattan, Hell's Kitchen)
+Quais Tipos de analise podem ser feitas com esse dataframe? 
 
-Produto (O que Foi Vendido)	product_id (ID do produto), product_category (Categoria macro), product_type (Subcategoria), product_detail (Descrição detalhada), Size (Tamanho do produto)
-
-Item do Pedido (Linha da Transação)	transaction_id (Cabeçalho do pedido - agrupa os itens da mesma compra), transaction_qty 
-
-(Quantidade de itens na linha), unit_price (Preço unitário), Total_Bill (Valor total da linha: qty × price)
+Análise de receita e volume ao longo do tempo — evolução mês a mês, dia a dia, por hora do dia.
+Análise comparativa entre lojas — receita, volume e mix de produtos por unidade (Hell's Kitchen vs. Lower Manhattan vs. Astoria).
+Análise de mix de produtos (portfólio) — quais categorias/tipos/itens mais vendem em quantidade e em receita (ex: análise 80/20).
+Análise de sazonalidade e padrão temporal — dias da semana mais fortes, horários de pico, tendência ao longo dos 5 meses.
+Análise de precificação — variação de preço unitário por produto/tamanho, e como isso se traduz em receita.
+Análise de tamanho/formato preferido (Small/Regular/Large) para itens que têm essa variação.
 
 # Passo 5: Hipóteses Analíticas
 
-H1 – Crescimento vs. Ticket Médio
-O crescimento do faturamento é puxado pelo aumento de clientes (volume), não pelo ticket médio.
-Teste: Comparar a evolução mensal do número de transações versus o ticket médio.
+Bloco 1 — Tendência e Performance Geral
+H1: A receita está em trajetória de crescimento ao longo dos 5 meses
+Lógica: Se a empresa está saudável, esperamos ver receita mensal estável ou crescente entre janeiro e maio de 2023. Uma queda consistente seria um sinal de alerta relevante para o CEO.
+Como testar: Agrupar Total_Bill por Month/Month Name, somar receita total e volume (transaction_qty), e plotar a série mensal. Calcular variação percentual mês a mês (MoM).
+H2: Existe sazonalidade dentro da semana — fins de semana e/ou dias específicos vendem mais
+Lógica: Cafeterias tipicamente têm padrão de consumo diferente entre dias úteis (rotina de trabalho) e fins de semana (lazer). Entender isso ajuda o CEO a avaliar se a operação está capturando bem esses padrões.
+Como testar: Agrupar receita e volume por Day Name/Day of Week, comparar médias e visualizar em gráfico de barras.
+H3: Existem horários de pico concentrados (ex: manhã, horário de almoço)
+Lógica: Cafeterias costumam ter picos claros (café da manhã, pausa da tarde). Isso não é uma decisão operacional imediata, mas ajuda a contextualizar se o padrão de consumo é "saudável"/esperado para o setor.
+Como testar: Agrupar receita/volume por Hour, visualizar curva intradiária.
 
-H2 – Concentração do Crescimento
-Apenas uma loja está puxando o crescimento da rede; as demais estão estagnadas ou em queda.
-Teste: Visualizar a trajetória de faturamento e volume de transações de cada loja ao longo dos meses.
+Bloco 2 — Comparação entre Lojas
+H4: As 3 lojas têm performances de receita significativamente diferentes
+Lógica: Se uma loja puxa a média para cima e as outras estão fracas (ou vice-versa), a visão consolidada pode esconder problemas ou oportunidades relevantes para o CEO.
+Como testar: Agrupar Total_Bill por store_location, comparar receita total, receita média por transação e volume. Calcular participação (%) de cada loja na receita total.
+H5: As lojas têm trajetórias de crescimento diferentes ao longo do tempo
+Lógica: A empresa como um todo pode parecer estável, mas isso pode mascarar uma loja crescendo e outra em queda — informação crítica para o CEO avaliar "bom ou ruim" com mais nuance.
+Como testar: Cruzar store_location x Month, gerando série temporal de receita por loja (gráfico de linhas múltiplas).
+H6: O mix de produtos varia entre lojas (cada loja tem um "perfil" de consumo diferente)
+Lógica: Localização (Hell's Kitchen, Lower Manhattan, Astoria) tem perfis de público diferentes (turismo, área comercial, residencial), o que pode gerar diferenças no que é mais vendido.
+Como testar: Tabela cruzada store_location x product_category, comparando % de receita por categoria dentro de cada loja.
 
-H3 – Categorias Secundárias
-Categorias não-core (Bakery, Branded/Flavours) estão crescendo mais que o café tradicional.
-Teste: Calcular a participação percentual (%) dessas categorias no faturamento total por mês e verificar se está aumentando.
+Bloco 3 — Mix de Produtos e Portfólio
+H7: Uma pequena quantidade de categorias/produtos concentra a maior parte da receita (padrão 80/20)
+Lógica: É comum que poucos produtos "carreguem" o negócio. Saber isso ajuda o CEO a entender onde está a real força do portfólio.
+Como testar: Agrupar receita por product_category e product_type, ordenar decrescente, calcular % acumulado (curva de Pareto).
+H8: Itens de tamanho "Large" geram receita desproporcional em relação ao volume vendido
+Lógica: Se tamanhos maiores têm preço proporcionalmente mais alto que o custo/volume adicional, isso indica eficiência de ticket — relevante mesmo numa análise geral, pois mostra "qualidade" da receita.
+Como testar: Agrupar Total_Bill e transaction_qty por Size (excluindo "Not Defined"), comparar ticket médio por tamanho.
+H9: "Coffee beans" e itens de maior preço unitário têm baixo volume mas impacto relevante na receita
+Lógica: Categorias como grãos premium (ex: "Civet Cat" visto na amostra) têm preço unitário alto — mesmo com poucas transações, podem distorcer a leitura de "ticket médio" e merecem ser vistas separadamente.
+Como testar: Comparar distribuição de unit_price por categoria, identificar outliers de preço e seu peso relativo na receita total.
 
-H4 – Upsell de Tamanho
-Produtos no tamanho "Large" estão ganhando participação de mercado.
-Teste: Filtrar bebidas (Café, Chá, Chocolate) e calcular a participação % do tamanho Large no volume de itens vendidos por mês.
+Bloco 4 — Qualidade e Consistência da Receita
+H10: O ticket médio por transação é estável ao longo do tempo (sinal de consistência, não só de volume)
+Lógica: Receita pode crescer por mais transações (mais fluxo) ou por ticket maior (mais valor por venda). Isso muda a "leitura" de saúde do negócio para o CEO — crescer por volume é diferente de crescer por preço.
+Como testar: Calcular receita total, número de transações e ticket médio (Total_Bill/transação) por mês, decompor a variação de receita em efeito volume vs. efeito ticket médio.
 
-H5 – Itens Premium
-Produtos de alto valor (top 10% de preço) são os principais responsáveis pelo aumento do gasto médio.
-Teste: Comparar o crescimento da receita dos itens mais caros (percentil 90) versus os itens de preço médio/baixo.
-
-H6 – Mudança de Horário de Consumo
-As manhãs estão saturadas; o crescimento real está vindo das tardes/noites.
-Teste: Calcular a variação percentual do faturamento por hora do dia (comparando faixas como 6h–11h vs. 12h–18h) mês a mês.
-
-H7 – Perfil de Dias Úteis vs. Fim de Semana
-O mix de produtos e o crescimento são radicalmente diferentes entre dias úteis e fins de semana.
-Teste: Separar a base em Dia Útil (Seg–Sex) e Fim de Semana (Sáb–Dom) e comparar evolução do faturamento e Top 5 tipos de produto.
-
-H8 – Perfil das Lojas (Corporativa vs. Residencial)
-"Lower Manhattan" (área corporativa) tem maior ticket médio e picos pela manhã; "Astoria" (área residencial) tem vendas mais constantes e fracionadas.
-Teste: Comparar por loja o Ticket Médio, Itens por Transação e distribuição de horários de pico.
-
-H9 – Aderência a Novos Produtos
-A loja com pior performance está atrasada na adoção dos novos best-sellers que estão impulsionando as outras lojas.
-Teste: Identificar os produtos que mais cresceram na rede nos últimos meses e verificar se a loja com queda vendeu esses itens proporcionalmente menos.
 
 
 Fiz no início apenas 4 Hipóteses para quebrar o gelo. Isso é uma análise exploratória do dataframe com base na pergunta fechada que o Analista de Dados Sr. (Gustavo Shelby) me sugeriu.
@@ -128,67 +134,21 @@ Fiz no início apenas 4 Hipóteses para quebrar o gelo. Isso é uma análise exp
 
 # Passo 7: Priorização das Hipóteses Analíticas
 
-| ID     | Hipótese Analítica                                                                                                       | Mecanismo Acionável                                                                                 | Prioridade |
-
-| **H2** | O crescimento da rede está concentrado em uma única loja, enquanto as demais apresentam baixo crescimento ou estagnação. | 
-
-Intervir nas lojas de baixo desempenho e replicar as boas práticas da unidade com melhor resultado. | 🔴 Alto    |
-]
+Resumo dos vereditos
+#HipóteseVereditoH1Receita em trajetória de crescimento✅ ConfirmadaH2Fim de semana vende mais❌ RefutadaH3Picos de horário concentrados✅ ConfirmadaH4Lojas com performance muito diferente❌ RefutadaH5Lojas com trajetórias diferentes❌ RefutadaH6Mix de produto varia por loja🟡 ParcialH7Concentração de receita (Pareto)✅ ConfirmadaH8Tamanho maior = ticket desproporcional✅ ConfirmadaH9Itens caros, baixo volume, alto impacto🟡 ParcialH10Ticket médio estável (crescimento = volume)✅ Confirmada
 
 
-| **H3** | O crescimento das vendas é impulsionado pelas categorias secundárias (Bakery, Branded e Flavours).                        
-
-Reforçar exposição dos produtos, criar combos e incentivar vendas adicionais.                       | 🔴 Alto    |
-]
-
-| **H4** | O aumento do faturamento está relacionado ao crescimento das vendas do tamanho **Large**.                                
-
-Treinar a equipe para realizar upsell de tamanho durante o atendimento.                             | 🔴 Alto    |
-]
-
-| **H6** | O crescimento das vendas ocorre principalmente no período da tarde e da noite.                                            
-
-Ajustar escalas, estoque e capacidade operacional aos novos horários de maior demanda.              | 🔴 Alto    |
-]
-
-| **H7** | Os fins de semana apresentam comportamento de vendas diferente dos dias úteis.                                            
-
-Adequar escala, estoque e campanhas para sábado e domingo.                                          | 🔴 Alto    |
-]
-
-| **H8** | O perfil da localização da loja (corporativa ou residencial) influencia o desempenho das vendas.                          
-
-Adaptar a estratégia operacional às características de cada unidade.                                | 🔴 Alto    |
-]
-
-| **H9** | A queda de desempenho de uma loja está associada à baixa adesão aos novos produtos.                                       
-
-Reforçar treinamento da equipe e realizar ações de degustação.                                      | 🔴 Alto    |
-]
-
-| **H1** | O crescimento da receita é impulsionado pelo aumento do volume de clientes ou pelo aumento do ticket médio.               
-
-Definir ações com base no diagnóstico: eficiência operacional ou aumento do ticket médio.           | 🟡 Médio   |
-]
-
-| **H5** | Produtos premium representam a principal alavanca de crescimento do faturamento.                                          
-
-Incentivar a venda consultiva e garantir disponibilidade dos produtos premium.                      | 🟡 Médio   |
-]
 
 # Insights da análise
 
 # Resultados
 
-**📥 Baixe a apresentação em PowerPoint (clique no link e, em seguida, em "Download" ou "View raw"):**  
-  [https://docs.google.com/presentation/d/1NhQ-8F8iABrALSBeC_FBwQPg6H6-_DK8/edit?usp=sharing&ouid=114029927907630112086&rtpof=true&sd=true](https://docs.google.com/presentation/d/1NhQ-8F8iABrALSBeC_FBwQPg6H6-_DK8/edit?usp=sharing&ouid=114029927907630112086&rtpof=true&sd=true)
+**📥 Baixe a apresentação em HTML estilo PowerPoint (clique no link e, em seguida, em "Download" ou "View raw"):**  
+  [https://drive.google.com/file/d/1E27NQAoMS-IlWDIjmUC06cNWLhDytVfQ/view?usp=sharing](https://drive.google.com/file/d/1E27NQAoMS-IlWDIjmUC06cNWLhDytVfQ/view?usp=sharing)
+
+**📥 Baixe a apresentação em HTML estilo Power BI (clique no link e, em seguida, em "Download" ou "View raw"):**  
+  [https://docs.google.com/presentation/d/1NhQ-8F8iABrALSBeC_FBwQPg6H6-_DK8/edit?usp=sharing&ouid=114029927907630112086&rtpof=true&sd=true](https://drive.google.com/file/d/1DpqMkLNrnWYtOHN_XdZFHJoG2ZFfss67/view?usp=sharing)
 
 # Próximos passos
 
-Entrar em contato com o engenheiro de dados para entender as fontes de dados da empresa e verificar se os dados coletados estão íntegros e consistentes.
-
-Realizar uma auditoria na base de dados para identificar possíveis falhas de coleta, processamento, integração ou modelagem que possam estar comprometendo as análises.
-
-Comunicar o CEO e a gerência sobre os problemas identificados, destacando que os dados atuais podem não refletir a realidade do negócio.
-
-Recomendar que decisões estratégicas relevantes, como expansão, investimentos ou mudanças operacionais significativas, não sejam tomadas com base na base de dados atual até que sua qualidade e confiabilidade sejam validadas.
+receber feedback do CEO para saber seu desejo foi atendido com base na analise aqui presente, ou se vai ser feito um aprofundamento na analise
