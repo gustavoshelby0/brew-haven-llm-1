@@ -1,5 +1,14 @@
 # Análise Exploratória e Diagnóstica da Brew Haven usando LLM
 
+## Data Analyst LLM
+
+
+📥 **Baixe a apresentação estilo Power BI em HTML:**
+[Clique aqui para acessar o arquivo](https://drive.google.com/file/d/1gyAR5eKNhJnIeE-GkABINKNGWZG1w6rj/view?usp=sharing)
+
+📥 **Baixe a apresentação executiva em HTML:**
+[Clique aqui para acessar o arquivo](https://drive.google.com/file/d/13KH2gqPZ6dFZp1iVjQ3P4CLLx5a_NJhN/view?usp=sharing)
+
 ## Problema de Negócio
 
 ### Contexto da empresa
@@ -183,11 +192,15 @@ O valor associado a esse fato é o **`Total_Bill`** do pedido, que deve ser soma
 
 ### Resultados
 
-**📥 Baixe a apresentação em HTML estilo PowerPoint** (clique no link e, em seguida, em "Download" ou "View raw"):  
-[https://drive.google.com/file/d/1E27NQAoMS-IlWDIjmUC06cNWLhDytVfQ/view?usp=sharing](https://drive.google.com/file/d/1E27NQAoMS-IlWDIjmUC06cNWLhDytVfQ/view?usp=sharing)
+## Data Analyst LLM
 
-**📥 Baixe a apresentação em HTML estilo Power BI** (clique no link e, em seguida, em "Download" ou "View raw"):  
-[https://drive.google.com/file/d/1DpqMkLNrnWYtOHN_XdZFHJoG2ZFfss67/view?usp=sharing](https://drive.google.com/file/d/1DpqMkLNrnWYtOHN_XdZFHJoG2ZFfss67/view?usp=sharing)
+
+📥 **Baixe a apresentação estilo Power BI em HTML:**
+[Clique aqui para acessar o arquivo](https://drive.google.com/file/d/1gyAR5eKNhJnIeE-GkABINKNGWZG1w6rj/view?usp=sharing)
+
+📥 **Baixe a apresentação executiva em HTML:**
+[Clique aqui para acessar o arquivo](https://drive.google.com/file/d/13KH2gqPZ6dFZp1iVjQ3P4CLLx5a_NJhN/view?usp=sharing)
+
 
 ---
 
